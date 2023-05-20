@@ -44,7 +44,7 @@ class Affine:
     def decrypt(self, cipher_text: str) -> str:
         decrypted_message = ""
         a_inverse = self.modular_inverse()
-        for letter in cipher_text:
+        for letter in cipher_text.upper():
             if letter.isalpha():
                 decrypted_message += chr(((ord(letter) - 65 - self.b) * a_inverse) % self.mod + 65)
             else:
@@ -113,6 +113,7 @@ class Playfair:
     def decrypt(self, cipher_text: str) -> str:
         decrypted_message = ""
 
+        cipher_text = cipher_text.upper()
         pair_letter_list = self._slice_str(''.join(cipher_text), 0, len(cipher_text), 2)
         for letters in pair_letter_list:
             pos = self._letters_position(letters)
@@ -155,4 +156,33 @@ class Playfair:
                 i += 1
 
         return pos
+
+
+class Vigenere:
+    def __init__(self, key: str) -> None:
+        self.key = key.upper()
+
+    def encrypt(self, message: str) -> str:
+        encrypted_message = ""
+        key_length = len(self.key)
+        i = 0
+        for letter in message.upper():
+            encrypted_message += chr(((ord(letter) - 65) + (ord(self.key[i]) - 65)) % 26 + 65)
+            i += 1
+            if i == key_length:
+                i = 0
+        
+        return encrypted_message
+    
+    def decrypt(self, cipher_text: str) -> str:
+        decrypted_message = ""
+        key_length = len(self.key)
+        i = 0
+        for letter in cipher_text.upper():
+            decrypted_message += chr(((ord(letter) - 65) - (ord(self.key[i]) - 65) + 26) % 26 + 65)
+            i += 1
+            if i == key_length:
+                i = 0
+        
+        return decrypted_message
     
