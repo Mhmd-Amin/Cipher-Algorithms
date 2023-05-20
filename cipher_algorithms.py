@@ -1,3 +1,6 @@
+from math import sqrt
+import numpy as np
+
 class Shift:
     def __init__(self, shift: int, mod: int = 26) -> None:
         self.shift = shift
@@ -43,7 +46,7 @@ class Affine:
 
     def decrypt(self, cipher_text: str) -> str:
         decrypted_message = ""
-        a_inverse = self.modular_inverse()
+        a_inverse = self.modular_inverse(self.a, self.mod)
         for letter in cipher_text.upper():
             if letter.isalpha():
                 decrypted_message += chr(((ord(letter) - 65 - self.b) * a_inverse) % self.mod + 65)
@@ -51,9 +54,10 @@ class Affine:
                 decrypted_message += letter
         return decrypted_message
 
-    def modular_inverse(self) -> int:
-        for x in range(1, self.mod):
-            if (self.a * x) % self.mod == 1:
+    @staticmethod
+    def modular_inverse(a:int, mod: int) -> int:
+        for x in range(1, mod):
+            if (a * x) % mod == 1:
                 return x
         return None
     
@@ -157,6 +161,45 @@ class Playfair:
 
         return pos
     
+
+class Hill:
+    def __init__(self, key: str) -> None:
+        self.set_key(key)
+
+    def encrypt(self, message:str) -> str:
+        if len(message) != len(self._key):
+            raise(ValueError("The length of key must equal to the length of message to the power of 2"))
+
+        return self.multiply(message, self._key)
+
+    def decrypt(self, cipher_text: str) -> str:
+        if len(cipher_text) != len(self._key):
+            raise(ValueError("The length of key must equal to the length of cipher text to the power of 2"))
+        
+        det = int(np.linalg.det(self._key))
+        if det == 0 or not Affine._has_inverse(det, 26):
+            raise("The key has not inverse")    
+        inv_det = Affine.modular_inverse(det, 26)
+        cofactor = np.linalg.inv(self._key).T * det
+        inverse_matrix = np.remainder((inv_det * cofactor), 26).T
+        return self.multiply(cipher_text, inverse_matrix)
+
+    @staticmethod
+    def multiply(text: str, key: np.ndarray) -> str:
+        text = list(map(lambda x: ord(x)-65, text.upper()))
+        text = np.reshape(text, (len(text), 1))
+        ans = np.matmul(key, text)
+        ans = np.remainder(np.rint(ans), 26) + 65
+        ans = "".join(map(lambda x: chr(int(x)), ans.reshape(-1).tolist()))
+        return ans
+
+    def set_key(self, key: str) -> None:
+        msg_length = sqrt(len(key))
+        if msg_length % 1 != 0:
+            raise("The key length must be square number")
+        key = list(map(lambda x: ord(x)-65, key.upper()))
+        self._key = np.reshape(key, (int(msg_length), int(msg_length)))
+
 
 class Vigenere:
     def __init__(self, key: str) -> None:
