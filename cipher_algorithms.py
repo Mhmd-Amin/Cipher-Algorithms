@@ -1,5 +1,6 @@
 from math import sqrt
 import numpy as np
+import re
 
 class Shift:
     def __init__(self, shift: int, mod: int = 26) -> None:
@@ -178,7 +179,7 @@ class Hill:
         
         det = int(np.linalg.det(self._key))
         if det == 0 or not Affine._has_inverse(det, 26):
-            raise("The key has not inverse")    
+            raise(ValueError("The key has not inverse"))    
         inv_det = Affine.modular_inverse(det, 26)
         cofactor = np.linalg.inv(self._key).T * det
         inverse_matrix = np.remainder((inv_det * cofactor), 26).T
@@ -196,9 +197,66 @@ class Hill:
     def set_key(self, key: str) -> None:
         msg_length = sqrt(len(key))
         if msg_length % 1 != 0:
-            raise("The key length must be square number")
+            raise(ValueError("The key length must be square number"))
         key = list(map(lambda x: ord(x)-65, key.upper()))
         self._key = np.reshape(key, (int(msg_length), int(msg_length)))
+
+
+class Permutation:
+    def __init__(self, permutation: list) -> None:
+        self.set_permutation(permutation)
+
+    def encode(self, message: str) -> str:
+        encrypted_message = ""
+        message = self.preprocess(message)
+        
+        i = 0
+        while i * self.block_size < len(message):
+            j = i * self.block_size
+            for position in self.perutation:
+                encrypted_message += message[position + j - 1].upper()
+            i += 1
+
+        return encrypted_message
+    
+    def decode(self, cipher_text:str) -> str:
+        decrypted_message = ""
+        cipher_text = self.preprocess(cipher_text)
+
+        i = 0
+        while i * self.block_size < len(cipher_text):
+            j = i * self.block_size
+            for position in self.inverse_permutation:
+                decrypted_message += cipher_text[position + j - 1].upper()
+            i += 1
+
+        return decrypted_message
+
+    def set_permutation(self, permutation: list) -> None:
+        block_size = len(permutation)
+        if block_size == 1:
+            self.perutation = permutation
+            return
+
+        for i in range(0, block_size):
+            for j in range(1+i, block_size):
+                if permutation[i] == permutation[j]:
+                    raise(ValueError("The permutation has repeated value"))
+        
+        self.block_size = block_size
+        self.perutation = permutation
+        self.inverse_permutation = [0] * block_size
+        
+        for i in range(block_size):
+            self.inverse_permutation[permutation[i] - 1] = i + 1
+
+    def preprocess(self, text: str) -> str:
+        text = re.sub('[^a-zA-Z]', '', text)
+        reminder = len(text) % self.block_size
+        if reminder != 0:
+            for _ in range(self.block_size - reminder):
+                text += "X"
+        return text
 
 
 class Vigenere:
