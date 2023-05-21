@@ -1,6 +1,6 @@
 # Cipher-Algorithms
 
-
+---
 # ElGamal Encryption Algorithm
 
 The ElGamal encryption algorithm is a public-key encryption scheme that provides confidentiality and allows secure communication between two parties. It is based on the computational difficulty of solving the discrete logarithm problem. The algorithm involves key generation, encryption, and decryption processes.
@@ -54,7 +54,9 @@ plaintext = decrypt(ciphertext, p, private_key)
 print("Original Message:", message)
 print("Decrypted Message:", plaintext)
 ```
+---
 
+---
 # Diffie-Hellman Key Exchange Algorithm
 
 The Diffie-Hellman key exchange algorithm is a method for two parties to securely establish a shared secret over an insecure communication channel. It allows the parties to agree upon a shared secret without directly transmitting it, providing a means for secure key establishment.
@@ -95,3 +97,42 @@ shared_secret_bob = generate_shared_secret(public_key_alice, private_key_bob, p)
 print("Shared Secret for Alice:", shared_secret_alice)
 print("Shared Secret for Bob:", shared_secret_bob)
 ```
+---
+
+
+---
+# Miller-Rabin Primality Testing Algorithm
+
+The Miller-Rabin primality testing algorithm is a probabilistic algorithm used to determine whether a given number is likely to be prime. It is based on the concept of witness values that can indicate whether a number is composite.
+
+## Primality Testing
+
+To test for primality using the Miller-Rabin algorithm, follow these steps:
+
+1. Perform base cases:
+   - If the number `n` is less than or equal to 1, return `False` (not prime).
+   - If the number `n` is 2 or 3, return `True` (prime).
+2. Express `n - 1` as `2^r * d`, where `r` is a non-negative integer and `d` is an odd number.
+3. Repeat the following `k` times, where `k` is a parameter that determines the accuracy of the test:
+   - Choose a random base `a` between 2 and `n - 2`, inclusive.
+   - Compute `x = a^d mod n`.
+   - If `x` is equal to 1 or `n - 1`, continue to the next iteration.
+   - Repeat `r - 1` times:
+     - Update `x` to `x^2 mod n`.
+     - If `x` is equal to `n - 1`, break the loop.
+   - If the loop completes without finding `n - 1`, return `False` (not prime).
+4. Return `True` (likely prime).
+
+## Example Usage
+
+```python
+# Example usage
+num = 37  # Number to test for primality
+
+if is_prime(num):
+    print(f"{num} is prime.")
+else:
+    print(f"{num} is not prime.")
+```
+
+---
