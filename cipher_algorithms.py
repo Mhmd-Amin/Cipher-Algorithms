@@ -2,12 +2,13 @@ from math import sqrt
 import numpy as np
 import re
 
+
 class Shift:
     def __init__(self, shift: int, mod: int = 26) -> None:
         self.shift = shift
         self.mod = mod
 
-    def encrypt(self, message:str) -> str:
+    def encrypt(self, message: str) -> str:
         encrypted_message = ""
         for letter in message.upper():
             if letter.isalpha():
@@ -33,13 +34,13 @@ class Affine:
             self.b = b
             self.mod = mod
         else:
-            raise(ValueError("{a} hasn`t inverse in mod{mod}"))
+            raise(ValueError("{a} has not inverse in mod{mod}"))
         
     def encrypt(self, message: str) -> str:
         encrypted_message = ""
         for letter in message.upper():
             if letter.isalpha():
-                letter = (ord(letter) -65) * self.a
+                letter = (ord(letter) - 65) * self.a
                 encrypted_message += chr((letter + self.b) % self.mod + 65)
             else:
                 encrypted_message += letter
@@ -56,7 +57,7 @@ class Affine:
         return decrypted_message
 
     @staticmethod
-    def modular_inverse(a:int, mod: int) -> int:
+    def modular_inverse(a: int, mod: int) -> any:
         for x in range(1, mod):
             if (a * x) % mod == 1:
                 return x
@@ -74,12 +75,12 @@ class Playfair:
         alphabet = "ABCDEFGHIKLMNOPQRSTUVWXYZ"
         self.table = []
 
-        key = key.upper()
+        key = list(key.upper())
         for i in range(len(key)):
             if key[i] == 'J':
                 key[i] = 'I'
 
-        temp_table = "".join(dict.fromkeys(key+alphabet))
+        temp_table = "".join(dict.fromkeys("".join(key)+alphabet))
         self.table = Playfair._slice_str(temp_table, 0, 25, 5)
 
     def encrypt(self, message: str) -> str:
@@ -142,7 +143,7 @@ class Playfair:
             sliced_list.append(list(map(str, text[x:x+step]))) 
         return sliced_list
 
-    def _letters_position(self, letters: list) -> tuple:
+    def _letters_position(self, letters: list) -> list:
         pos = []
 
         for letter in letters:
@@ -165,9 +166,10 @@ class Playfair:
 
 class Hill:
     def __init__(self, key: str) -> None:
+        self._key = None
         self.set_key(key)
 
-    def encrypt(self, message:str) -> str:
+    def encrypt(self, message: str) -> str:
         if len(message) != len(self._key):
             raise(ValueError("The length of key must equal to the length of message to the power of 2"))
 
@@ -204,6 +206,9 @@ class Hill:
 
 class Permutation:
     def __init__(self, permutation: list) -> None:
+        self.block_size = None
+        self.permutation = None
+        self.inverse_permutation = None
         self.set_permutation(permutation)
 
     def encode(self, message: str) -> str:
@@ -213,13 +218,13 @@ class Permutation:
         i = 0
         while i * self.block_size < len(message):
             j = i * self.block_size
-            for position in self.perutation:
+            for position in self.permutation:
                 encrypted_message += message[position + j - 1].upper()
             i += 1
 
         return encrypted_message
     
-    def decode(self, cipher_text:str) -> str:
+    def decode(self, cipher_text: str) -> str:
         decrypted_message = ""
         cipher_text = self.preprocess(cipher_text)
 
@@ -235,7 +240,7 @@ class Permutation:
     def set_permutation(self, permutation: list) -> None:
         block_size = len(permutation)
         if block_size == 1:
-            self.perutation = permutation
+            self.permutation = permutation
             return
 
         for i in range(0, block_size):
@@ -244,7 +249,7 @@ class Permutation:
                     raise(ValueError("The permutation has repeated value"))
         
         self.block_size = block_size
-        self.perutation = permutation
+        self.permutation = permutation
         self.inverse_permutation = [0] * block_size
         
         for i in range(block_size):
@@ -289,6 +294,6 @@ class Vigenere:
                 if i == key_length:
                     i = 0
             else:
-                encrypted_message += letter
+                decrypted_message += letter
 
         return decrypted_message
