@@ -64,10 +64,53 @@ class Affine:
         return None
     
     @staticmethod
-    def _has_inverse(a: int, b: int) -> bool:
-        while b:
-            a, b = b, a % b
-        return abs(a) == 1
+    def _has_inverse(x: int, y: int) -> bool:
+        while y:
+            x, y = y, x % y
+        return abs(x) == 1
+
+
+class Substitution:
+    def __init__(self, map_list: dict) -> None:
+        self.map_list = None
+        self.set_map_list(map_list)
+
+    def encode(self, message: str) -> str:
+        encrypted_message = ""
+        for letter in message.upper():
+            if letter.isalpha():
+                encoded_letter = self.map_list.get(letter)
+                if encoded_letter:
+                    encrypted_message += encoded_letter
+            else:
+                encrypted_message += letter
+
+        return encrypted_message
+
+    def decode(self, cipher_text: str) -> str:
+        decode_map_list = dict(map(lambda kv: (kv[1].upper(), kv[0].upper()), self.map_list.items()))
+        decrypted_message = ""
+        for letter in cipher_text.upper():
+            if letter.isalpha():
+                decoded_letter = decode_map_list.get(letter)
+                if decoded_letter:
+                    decrypted_message += decoded_letter
+            else:
+                decrypted_message += letter
+
+        return decrypted_message
+
+    def set_map_list(self, map_list: dict) -> None:
+        alphabet = list("ABCDEFGHIJKLMNOPQRSTUVWXYZ")
+        alphabet.extend(alphabet)
+        for k, v in map_list.items():
+            if type(k) != str or type(v) != str or len(k) != 1 or len(v) != 1:
+                raise(ValueError("Key and values must be an alphabet letter"))
+            if k not in alphabet or v not in alphabet:
+                raise (ValueError("Keys or values must be alphabet"))
+        if len(alphabet) != 0:
+            raise (ValueError("Key list must have all alphabet"))
+        self.map_list = dict(map(lambda kv: (kv[0].upper(), kv[1].upper()), map_list.items()))
 
 
 class Playfair:
@@ -162,7 +205,7 @@ class Playfair:
                 i += 1
 
         return pos
-    
+
 
 class Hill:
     def __init__(self, key: str) -> None:
