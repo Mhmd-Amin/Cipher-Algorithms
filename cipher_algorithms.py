@@ -57,7 +57,7 @@ class Affine:
         return decrypted_message
 
     @staticmethod
-    def modular_inverse(a: int, mod: int) -> any:
+    def modular_inverse(a: int, mod: int) -> int | None:
         for x in range(1, mod):
             if (a * x) % mod == 1:
                 return x
@@ -75,14 +75,14 @@ class Substitution:
         self.map_list = None
         self.set_map_list(map_list)
 
-    def encode(self, message: str) -> str:
+    def encode(self, message: str, punc: bool = True) -> str:
         encrypted_message = ""
         for letter in message.upper():
             if letter.isalpha():
                 encoded_letter = self.map_list.get(letter)
                 if encoded_letter:
                     encrypted_message += encoded_letter
-            else:
+            elif punc or letter.isnumeric():
                 encrypted_message += letter
 
         return encrypted_message
@@ -108,6 +108,8 @@ class Substitution:
                 raise(ValueError("Key and values must be an alphabet letter"))
             if k not in alphabet or v not in alphabet:
                 raise (ValueError("Keys or values must be alphabet"))
+            alphabet.remove(k.upper())
+            alphabet.remove(v.upper())
         if len(alphabet) != 0:
             raise (ValueError("Key list must have all alphabet"))
         self.map_list = dict(map(lambda kv: (kv[0].upper(), kv[1].upper()), map_list.items()))
