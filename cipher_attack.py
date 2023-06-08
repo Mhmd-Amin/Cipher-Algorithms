@@ -1,3 +1,7 @@
+from typing import List, Dict
+import math
+
+
 class Cryptanalysis:
     def __init__(self):
         pass
@@ -96,3 +100,71 @@ class Cryptanalysis:
                 frequency_dict[k].pop(value)
 
         return frequency_dict
+
+
+class PolyAlphabetic:
+    def __init__(self, cipher_text: str = None) -> None:
+        self.cipher_text = None
+        if type(cipher_text) == str:
+            self.cipher_text = cipher_text
+        else:
+            raise (ValueError("Cipher text must be string"))
+
+    # def find_key(self) -> str:
+    #     possible_key = ""
+    #     return possible_key
+
+    def find_key_length(self) -> List[int]:
+        """kasiski_examination"""
+
+        possible_key_length = []
+        frequency_dict = Cryptanalysis.sort_frequencies(Cryptanalysis.find_frequency(self.cipher_text))
+        selected_word = [frequency_dict["triple"][0][0], frequency_dict["triple"][1][0],
+                         frequency_dict["quadruple"][0][0], frequency_dict["quadruple"][1][0]]
+        word_gcd = self.__calculate_gcd(self.__calculate_distance(self.__find_positions(selected_word)))
+
+        return possible_key_length
+
+    def __find_positions(self, selected_word: List[str]) -> Dict[str, List[int]]:
+        word_position = dict.fromkeys(selected_word, [])
+        cipher_text_length = len(self.cipher_text)
+        for i in range(cipher_text_length-2):
+            triple_letter = self.cipher_text[i].upper() + self.cipher_text[i + 1].upper() + self.cipher_text[i + 2].upper()
+            if triple_letter in selected_word:
+                word_position[triple_letter].append(i)
+            if i == cipher_text_length - 3:
+                continue
+            quadruple_letter = self.cipher_text[i].upper() + self.cipher_text[i + 1].upper() + self.cipher_text[i + 2].upper() + self.cipher_text[i + 3].upper()
+            if quadruple_letter in selected_word:
+                word_position[quadruple_letter].append(i)
+
+        return word_position
+
+    @staticmethod
+    def __calculate_distance(word_position: Dict[str, List[int]]) -> Dict[str, List[int]]:
+        word_distance = {}
+        for key, values in word_position.items():
+            distance = []
+            for i in range(1, len(values)):
+                distance.append(values[i] - values[0])
+            word_distance[key] = distance
+        return word_distance
+
+    @staticmethod
+    def __calculate_gcd(words_distance: Dict[str, List[int]]) -> Dict[str, int]:
+        word_gcd = {}
+        for key, values in words_distance.items():
+            values_length = len(values)
+            if values_length >= 2:
+                word_gcd[key] = math.gcd(values[0], values[1])
+            elif values_length == 1:
+                word_gcd[key] = values[0]
+                continue
+            else:
+                continue
+            for i in range(2, len(values)):
+                word_gcd[key] = math.gcd(word_gcd[key], values[i])
+
+        return word_gcd
+
+# TODO: remove repeated pdf part by using generator or Helper class that apply function on all text pages

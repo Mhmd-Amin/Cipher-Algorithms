@@ -313,7 +313,7 @@ class Vigenere:
     def __init__(self, key: str) -> None:
         self.key = key.upper()
 
-    def encrypt(self, message: str) -> str:
+    def encrypt(self, message: str, punc: bool = True) -> str:
         encrypted_message = ""
         key_length = len(self.key)
         i = 0
@@ -323,7 +323,7 @@ class Vigenere:
                 i += 1
                 if i == key_length:
                     i = 0
-            else:
+            elif punc:
                 encrypted_message += letter
 
         return encrypted_message
